@@ -1,0 +1,49 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { isAuthenticated, getStoredUser } from '@/lib/auth';
+import AdminSidebar from '@/components/admin/Sidebar';
+import AdminTopbar from '@/components/admin/Topbar';
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
+    const [authorized, setAuthorized] = useState(false);
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+        if (!isAuthenticated()) {
+            router.replace('/login?redirect=/admin');
+            return;
+        }
+
+        const user = getStoredUser();
+        if (user && (user.role === 'admin' || user.role === 'owner')) {
+            setAuthorized(true);
+        } else {
+            router.replace('/');
+        }
+        setChecking(false);
+    }, [router]);
+
+    if (checking || !authorized) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-gray-400">Verifying access...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <AdminSidebar />
+            <div className="ml-64">
+                <AdminTopbar />
+                <main className="p-6">{children}</main>
+            </div>
+        </div>
+    );
+}

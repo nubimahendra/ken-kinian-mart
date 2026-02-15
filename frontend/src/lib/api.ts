@@ -16,10 +16,14 @@ export async function apiFetch<T>(
     const { skipAuth = false, headers: customHeaders, ...restOptions } = options;
 
     const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
         ...(customHeaders as Record<string, string>),
     };
+
+    // Only set Content-Type to application/json if body is NOT FormData
+    if (!(restOptions.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     // Inject auth token if available
     if (!skipAuth) {

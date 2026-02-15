@@ -3,24 +3,28 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { ApiResponse, PaginatedData, Product, Category } from '@/types';
+import { ApiResponse, PaginatedData, Product, Category, Hero } from '@/types';
 import ProductCard from '@/components/ProductCard';
 import Button from '@/components/Button';
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [heroes, setHeroes] = useState<Hero[]>([]);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, heroRes] = await Promise.all([
           apiFetch<ApiResponse<PaginatedData<Product>>>('/public/products?per_page=8', { skipAuth: true }),
           apiFetch<ApiResponse<Category[]>>('/public/categories', { skipAuth: true }).catch(() => ({ data: [] as Category[] })),
+          apiFetch<ApiResponse<Hero[]>>('/public/heroes', { skipAuth: true }).catch(() => ({ data: [] as Hero[] })),
         ]);
         setProducts(prodRes.data?.data || []);
         setCategories((catRes as ApiResponse<Category[]>).data || []);
+        setHeroes((heroRes as ApiResponse<Hero[]>).data || []);
       } catch {
         // Silently continue — landing page still works without data
       } finally {
@@ -33,45 +37,77 @@ export default function HomePage() {
   return (
     <div>
       {/* ==================== HERO ==================== */}
+      {/* ==================== HERO ==================== */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-green-50">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-200/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-green-200/30 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-200/30 rounded-full blur-3xl opacity-50" />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-green-200/30 rounded-full blur-3xl opacity-50" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-100 text-primary-700 text-sm font-medium rounded-full mb-6">
-              <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-              Fresh from Local Farms
-            </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-              Fresh Organic
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-green-500">
-                Products
-              </span>{' '}
-              for You
-            </h1>
-            <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-lg">
-              Premium quality organic fruits, vegetables, and essentials sourced directly from
-              trusted local farmers. Delivered fresh to your doorstep.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/products">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                  Shop Now
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Create Account
-                </Button>
-              </Link>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          {heroes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="max-w-xl z-10">
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/80 backdrop-blur-sm border border-primary-100 text-primary-700 text-xs font-medium rounded-full mb-4 shadow-sm">
+                  <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse" />
+                  Fresh from Local Farms
+                </span>
+                <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+                  {heroes[currentHeroIndex].title || 'Fresh Organic Products'}
+                </h1>
+                <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-6">
+                  {heroes[currentHeroIndex].subtitle || 'Premium quality organic fruits, vegetables, and essentials sourced directly from trusted local farmers.'}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href={heroes[currentHeroIndex].cta_link || '/products'}>
+                    <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-primary-500/20">
+                      {heroes[currentHeroIndex].cta_text || 'Shop Now'}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative h-[300px] md:h-[400px] w-full rounded-2xl overflow-hidden shadow-2xl shadow-green-900/10">
+                <img
+                  src={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace('/api', '')}/storage/${heroes[currentHeroIndex].image}`}
+                  alt="Hero"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Navigation Dots if multiple heroes */}
+                {heroes.length > 1 && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+                    {heroes.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentHeroIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all ${idx === currentHeroIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/80'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Fallback static hero if no dynamic content */
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-100 text-primary-700 text-sm font-medium rounded-full mb-6">
+                <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+                Fresh from Local Farms
+              </span>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+                Fresh Organic <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-green-500">Products</span> for You
+              </h1>
+              <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-lg">
+                Premium quality organic fruits, vegetables, and essentials sourced directly from trusted local farmers.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/products">
+                  <Button size="lg">Shop Now</Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

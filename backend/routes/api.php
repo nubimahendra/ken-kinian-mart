@@ -9,6 +9,7 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Owner\OwnerController;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\HeroController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +39,7 @@ Route::prefix('public')->group(function () {
     Route::get('/products', [CustomerProductController::class, 'index']);
     Route::get('/products/{slug}', [CustomerProductController::class, 'show']);
     Route::get('/categories', [CustomerCategoryController::class, 'index']);
+    Route::get('/heroes', [HeroController::class, 'index']);
 });
 
 // =============================================
@@ -79,6 +81,12 @@ Route::prefix('owner')->middleware(['auth:api', 'role:owner'])->group(function (
 
     Route::get('/shipping-zones', [OwnerController::class, 'listShippingZones']);
     Route::put('/shipping-zones/{id}', [OwnerController::class, 'updateShippingZone']);
+
+    // Heroes
+    Route::get('/heroes', [HeroController::class, 'indexAdmin']);
+    Route::post('/heroes', [HeroController::class, 'store']);
+    Route::put('/heroes/{hero}', [HeroController::class, 'update']);
+    Route::delete('/heroes/{hero}', [HeroController::class, 'destroy']);
 });
 
 // =============================================

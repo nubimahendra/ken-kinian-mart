@@ -1,6 +1,18 @@
 // =============================================
 // API Response
 // =============================================
+export interface Hero {
+  id: number;
+  title?: string;
+  subtitle?: string;
+  image: string;
+  cta_text?: string;
+  cta_link?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;

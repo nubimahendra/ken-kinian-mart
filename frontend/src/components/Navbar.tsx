@@ -10,13 +10,17 @@ export default function Navbar() {
     const [cartCount, setCartCount] = useState(0);
     const [authed, setAuthed] = useState(false);
     const [userName, setUserName] = useState('');
+    const [userRole, setUserRole] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
         setAuthed(isAuthenticated());
         const user = getStoredUser();
-        if (user) setUserName(user.name);
+        if (user) {
+            setUserName(user.name);
+            setUserRole(user.role);
+        }
 
         const updateCart = () => {
             const { itemCount } = getCartTotal();
@@ -36,6 +40,7 @@ export default function Navbar() {
         removeToken();
         setAuthed(false);
         setUserName('');
+        setUserRole('');
         setMenuOpen(false);
         router.push('/');
         router.refresh();
@@ -59,13 +64,17 @@ export default function Navbar() {
 
                     {/* Desktop Nav */}
                     <div className="hidden md:flex items-center gap-1">
-                        <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
-                            Home
-                        </Link>
-                        <Link href="/products" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
-                            Products
-                        </Link>
-                        {authed && (
+                        {!['admin', 'owner'].includes(userRole) && (
+                            <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
+                                Home
+                            </Link>
+                        )}
+                        {!['admin', 'owner'].includes(userRole) && (
+                            <Link href="/products" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
+                                Products
+                            </Link>
+                        )}
+                        {authed && !['admin', 'owner'].includes(userRole) && (
                             <Link href="/orders" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
                                 My Orders
                             </Link>
@@ -75,19 +84,21 @@ export default function Navbar() {
                     {/* Right Side */}
                     <div className="flex items-center gap-3">
                         {/* Cart */}
-                        <Link
-                            href="/cart"
-                            className="relative p-2.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
-                        >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                            </svg>
-                            {cartCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 bg-primary-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
-                                    {cartCount > 99 ? '99+' : cartCount}
-                                </span>
-                            )}
-                        </Link>
+                        {!['admin', 'owner'].includes(userRole) && (
+                            <Link
+                                href="/cart"
+                                className="relative p-2.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-0.5 -right-0.5 bg-primary-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+                                        {cartCount > 99 ? '99+' : cartCount}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
 
                         {/* Auth */}
                         <div className="hidden md:flex items-center gap-2">
@@ -142,13 +153,17 @@ export default function Navbar() {
                 {/* Mobile Menu */}
                 {menuOpen && (
                     <div className="md:hidden border-t border-gray-100 py-3 space-y-1 animate-in slide-in-from-top-2">
-                        <Link href="/" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                            Home
-                        </Link>
-                        <Link href="/products" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                            Products
-                        </Link>
-                        {authed && (
+                        {!['admin', 'owner'].includes(userRole) && (
+                            <Link href="/" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                                Home
+                            </Link>
+                        )}
+                        {!['admin', 'owner'].includes(userRole) && (
+                            <Link href="/products" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                                Products
+                            </Link>
+                        )}
+                        {authed && !['admin', 'owner'].includes(userRole) && (
                             <Link href="/orders" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
                                 My Orders
                             </Link>

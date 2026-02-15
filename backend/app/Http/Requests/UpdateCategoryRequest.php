@@ -15,12 +15,20 @@ class UpdateCategoryRequest extends FormRequest
 
     public function rules(): array
     {
-        $categoryId = $this->route('id');
+        $category = $this->route('category');
+        $id = $this->route('id');
+
+        if ($category instanceof \App\Models\Category) {
+            $categoryId = $category->id;
+        } else {
+            $categoryId = $category ?? $id;
+        }
 
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:categories,slug,' . $categoryId],
             'icon' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ];
     }
 

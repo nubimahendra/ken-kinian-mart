@@ -44,6 +44,8 @@ export interface Category {
   name: string;
   slug: string;
   icon: string | null;
+  image: string | null;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -55,6 +57,10 @@ export interface Product {
   slug: string;
   description: string | null;
   price: string;
+  old_price?: string;
+  is_best_seller?: boolean;
+  rating?: number;
+  review_count?: number;
   cost_price: string;
   stock: number;
   weight: number;

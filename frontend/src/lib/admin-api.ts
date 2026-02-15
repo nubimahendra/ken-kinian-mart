@@ -11,26 +11,24 @@ interface FetchOptions extends RequestInit {
  */
 export async function adminFetch<T>(
     endpoint: string,
-    options: FetchOptions = {}
+    options: RequestInit = {}
 ): Promise<T> {
-    const { skipAuth = false, headers: customHeaders, ...restOptions } = options;
+    const { headers: customHeaders, body, ...restOptions } = options;
 
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Accept': 'application/json',
         ...(customHeaders as Record<string, string>),
     };
 
-    // If body is FormData, let browser set Content-Type (with boundary)
-    if (restOptions.body instanceof FormData) {
+    // If body is FormData, delete Content-Type to let browser set boundary
+    if (body instanceof FormData) {
         delete headers['Content-Type'];
     }
 
-    if (!skipAuth) {
-        const token = getToken();
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    const token = getToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
 
     const url = `${API_URL}${endpoint}`;
@@ -38,15 +36,15 @@ export async function adminFetch<T>(
     const response = await fetch(url, {
         ...restOptions,
         headers,
+        body
     });
 
-    // Auto-logout on 401
     if (response.status === 401) {
         removeToken();
         if (typeof window !== 'undefined') {
             window.location.href = '/login?redirect=/admin';
         }
-        throw { status: 401, message: 'Unauthorized' };
+        throw new Error('Unauthorized');
     }
 
     const data = await response.json();

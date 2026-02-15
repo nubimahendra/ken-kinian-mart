@@ -14,7 +14,15 @@ class Category extends Model
         'name',
         'slug',
         'icon',
+        'image',
     ];
+
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     /**
      * Get the products for this category.

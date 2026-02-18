@@ -4,11 +4,13 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ShippingZoneController as AdminShippingZoneController;
 use App\Http\Controllers\Customer\CategoryController as CustomerCategoryController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Owner\OwnerController;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\Customer\ShippingZoneController;
 use App\Http\Controllers\HeroController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +41,7 @@ Route::prefix('public')->group(function () {
     Route::get('/products', [CustomerProductController::class, 'index']);
     Route::get('/products/{slug}', [CustomerProductController::class, 'show']);
     Route::get('/categories', [CustomerCategoryController::class, 'index']);
+    Route::get('/shipping-zones', [ShippingZoneController::class, 'index']);
     Route::get('/heroes', [HeroController::class, 'index']);
 });
 
@@ -110,6 +113,9 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin,owner'])->group(func
     // Orders
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
+
+    // Shipping Zones
+    Route::apiResource('shipping-zones', AdminShippingZoneController::class);
 });
 
 // =============================================

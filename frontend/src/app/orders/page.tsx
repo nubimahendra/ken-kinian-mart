@@ -7,6 +7,7 @@ import { isAuthenticated } from '@/lib/auth';
 import { ApiResponse, PaginatedData, Order } from '@/types';
 import Button from '@/components/Button';
 import Link from 'next/link';
+import { snapPay } from '@/lib/midtrans';
 
 export default function OrdersPage() {
     return (
@@ -20,6 +21,7 @@ function OrdersContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const newOrderId = searchParams.get('new');
+    const paymentStatus = searchParams.get('status');
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,30 +88,21 @@ function OrdersContent() {
 
             const snapToken = res.data.snap_token;
 
-            // Use Midtrans Snap.js if available
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const win = window as unknown as Record<string, any>;
-            if (win.snap) {
-                win.snap.pay(snapToken, {
-                    onSuccess: () => {
-                        window.location.reload();
-                    },
-                    onPending: () => {
-                        window.location.reload();
-                    },
-                    onClose: () => {
-                        setPayingId(null);
-                    },
-                });
-            } else {
-                // Fallback: open Midtrans Snap URL
-                const isProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true';
-                const snapUrl = isProduction
-                    ? `https://app.midtrans.com/snap/v2/vtweb/${snapToken}`
-                    : `https://app.sandbox.midtrans.com/snap/v2/vtweb/${snapToken}`;
-                window.open(snapUrl, '_blank');
-                setPayingId(null);
-            }
+            await snapPay(snapToken, {
+                onSuccess: () => {
+                    window.location.reload();
+                },
+                onPending: () => {
+                    window.location.reload();
+                },
+                onError: () => {
+                    alert('Payment failed. Please try again.');
+                },
+                onClose: () => {
+                    setPayingId(null);
+                }
+            });
+
         } catch (err: unknown) {
             const e = err as { message?: string };
             alert(e.message || 'Failed to generate payment. Please try again.');
@@ -140,12 +133,6 @@ function OrdersContent() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Midtrans Snap.js Script */}
-            <script
-                src={`https://app.sandbox.midtrans.com/snap/snap.js`}
-                data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || ''}
-            />
-
             {/* Header */}
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -157,12 +144,28 @@ function OrdersContent() {
             {/* New order notification */}
             {newOrderId && (
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 flex items-center gap-2">
-                        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Order placed successfully! Click &quot;Pay Now&quot; to complete your payment.
-                    </div>
+                    {paymentStatus === 'paid' ? (
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 flex items-center gap-2">
+                            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Payment successful! Your order is now being processed.
+                        </div>
+                    ) : paymentStatus === 'pending' ? (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 flex items-center gap-2">
+                            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Payment is pending. Please complete your payment.
+                        </div>
+                    ) : (
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 flex items-center gap-2">
+                            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zM12 8.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75V8.25z" />
+                            </svg>
+                            Order placed successfully! Click &quot;Pay Now&quot; to complete your payment.
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -20,6 +20,8 @@ class Order extends Model
         'status',
         'payment_status',
         'snap_token',
+        'payment_type',
+        'transaction_id',
         'paid_at',
     ];
 

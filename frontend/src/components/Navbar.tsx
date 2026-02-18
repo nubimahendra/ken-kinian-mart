@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { getCartTotal } from '@/lib/cart';
+import { getCartTotal, clearCart } from '@/lib/cart';
 import { isAuthenticated, removeToken, getStoredUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 
@@ -38,6 +38,8 @@ export default function Navbar() {
 
     const handleLogout = () => {
         removeToken();
+        clearCart();
+        window.dispatchEvent(new Event('cart-updated'));
         setAuthed(false);
         setUserName('');
         setUserRole('');

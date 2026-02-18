@@ -47,6 +47,7 @@ cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 php artisan serve
+php artisan jwt:secret
 http://127.0.0.1:8000
 🌐 Frontend Setup (Next.js)
 cd frontend

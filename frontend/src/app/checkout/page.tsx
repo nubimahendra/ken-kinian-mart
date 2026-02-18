@@ -8,6 +8,7 @@ import { getCart, getCartTotal, clearCart } from '@/lib/cart';
 import { ApiResponse, CartItem, ShippingZone, Order } from '@/types';
 import Button from '@/components/Button';
 import Link from 'next/link';
+import { snapPay, loadSnapScript } from '@/lib/midtrans';
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -26,29 +27,17 @@ export default function CheckoutPage() {
         setCart(getCart());
         setMounted(true);
 
+        // Preload Snap script
+        loadSnapScript().catch(console.error);
+
         // Fetch shipping zones
-        apiFetch<ApiResponse<ShippingZone[]>>('/admin/categories', { skipAuth: true })
-            .catch(() => ({ data: [] as ShippingZone[] }));
-
-        // Fetch shipping zones from a different approach - try direct
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/admin/categories`)
+        apiFetch<ApiResponse<ShippingZone[]>>('/public/shipping-zones', { skipAuth: true })
+            .then((res) => {
+                if (res.success) {
+                    setZones(res.data);
+                }
+            })
             .catch(() => { });
-
-        // For now, let's fetch shipping zones
-        apiFetch<ApiResponse<ShippingZone[]>>('/public/products?per_page=1', { skipAuth: true })
-            .catch(() => { });
-
-        // Actually fetch shipping zones - we need a public endpoint, or we use a workaround
-        const fetchZones = async () => {
-            try {
-                // Shipping zones might require auth, try fetching them
-                const res = await apiFetch<ApiResponse<ShippingZone[]>>('/admin/categories', { skipAuth: true });
-                // We'll use this for now; the actual shipping zone data comes from backend
-            } catch {
-                // Ignore
-            }
-        };
-        fetchZones();
     }, [router]);
 
     const formatPrice = (price: number) => {
@@ -83,25 +72,42 @@ export default function CheckoutPage() {
                 shipping_zone_id: selectedZone,
             };
 
-            const res = await apiFetch<ApiResponse<Order>>('/customer/checkout', {
+            // Call checkout API — now returns order AND snap_token
+            const res = await apiFetch<ApiResponse<{ order: Order; snap_token: string }>>('/customer/checkout', {
                 method: 'POST',
                 body: JSON.stringify(payload),
             });
 
-            // Clear cart
+            // Clear cart immediately on successful order creation
             clearCart();
             window.dispatchEvent(new Event('cart-updated'));
 
-            // Redirect to orders or payment
-            if (res.data?.id) {
-                router.push(`/orders?new=${res.data.id}`);
-            } else {
-                router.push('/orders');
-            }
+            const { order, snap_token } = res.data;
+
+            // Open Midtrans Snap Popup
+            await snapPay(snap_token, {
+                onSuccess: (result) => {
+                    console.log('Payment success', result);
+                    router.push(`/orders?new=${order.id}&status=paid`);
+                },
+                onPending: (result) => {
+                    console.log('Payment pending', result);
+                    router.push(`/orders?new=${order.id}&status=pending`);
+                },
+                onError: (result) => {
+                    console.error('Payment error', result);
+                    router.push(`/orders?new=${order.id}&status=error`);
+                },
+                onClose: () => {
+                    console.warn('Payment popup closed');
+                    // Redirect to orders page with warning
+                    router.push(`/orders?new=${order.id}&status=unpaid`);
+                }
+            });
+
         } catch (err: unknown) {
             const e = err as { message?: string };
             setError(e.message || 'Checkout failed. Please try again.');
-        } finally {
             setLoading(false);
         }
     };
@@ -167,15 +173,19 @@ export default function CheckoutPage() {
                         <label htmlFor="shipping-zone" className="block text-sm text-gray-600">
                             Select your shipping zone
                         </label>
-                        <input
+                        <select
                             id="shipping-zone"
-                            type="number"
-                            min="1"
-                            placeholder="Enter shipping zone ID (e.g. 1, 2, 3)"
                             value={selectedZone || ''}
                             onChange={(e) => setSelectedZone(e.target.value ? parseInt(e.target.value) : null)}
-                            className="block w-full px-4 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-xl placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all"
-                        />
+                            className="block w-full px-4 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all appearance-none"
+                        >
+                            <option value="">-- Select Zone --</option>
+                            {zones.map((zone) => (
+                                <option key={zone.id} value={zone.id}>
+                                    {zone.name} ({formatPrice(parseFloat(zone.price_per_kg))}/kg)
+                                </option>
+                            ))}
+                        </select>
                         <p className="text-xs text-gray-400">
                             Shipping cost will be calculated based on total weight ({totalWeight}g) and zone.
                         </p>
@@ -216,7 +226,7 @@ export default function CheckoutPage() {
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-3">
                     <Button onClick={handleCheckout} loading={loading} fullWidth size="lg">
-                        Place Order
+                        Same-Day Payment
                     </Button>
                     <Link href="/cart" className="w-full sm:w-auto">
                         <Button variant="outline" fullWidth size="lg">

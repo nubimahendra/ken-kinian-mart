@@ -144,6 +144,16 @@ class PaymentService
         // Process transaction status
         $transactionStatus = $payload['transaction_status'];
         $fraudStatus = $payload['fraud_status'] ?? 'accept';
+        $paymentType = $payload['payment_type'] ?? null;
+        $transactionId = $payload['transaction_id'] ?? null;
+
+        // Save payment details if available
+        if ($paymentType || $transactionId) {
+            $order->update([
+                'payment_type' => $paymentType,
+                'transaction_id' => $transactionId,
+            ]);
+        }
 
         switch ($transactionStatus) {
             case 'capture':
@@ -167,11 +177,21 @@ class PaymentService
             case 'cancel':
             case 'expire':
             case 'deny':
+                // Restore stock before cancelling
+                if ($order->status !== 'cancelled') {
+                    foreach ($order->items as $item) {
+                        if ($item->product) {
+                            $item->product->increment('stock', $item->quantity);
+                        }
+                    }
+                }
+
                 $order->update([
                     'status' => 'cancelled',
                     'payment_status' => 'unpaid',
                 ]);
-                Log::info("Midtrans Notification: Order {$transactionStatus}.", [
+
+                Log::info("Midtrans Notification: Order {$transactionStatus}. Stock restored.", [
                     'order_id' => $payload['order_id'],
                 ]);
                 break;

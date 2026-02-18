@@ -24,7 +24,7 @@ class OrderController extends Controller
     public function checkout(CheckoutRequest $request): JsonResponse
     {
         try {
-            $order = $this->orderService->checkout(
+            $result = $this->orderService->checkoutWithPayment(
                 items: $request->validated()['items'],
                 shippingZoneId: $request->validated()['shipping_zone_id'],
                 userId: auth('api')->id()
@@ -33,7 +33,10 @@ class OrderController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order created successfully.',
-                'data' => $order,
+                'data' => [
+                    'order' => $result['order'],
+                    'snap_token' => $result['snap_token'],
+                ],
             ], 201);
 
         } catch (InvalidArgumentException $e) {

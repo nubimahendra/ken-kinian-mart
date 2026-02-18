@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Services\Shipping\ShippingService;
+use App\Services\Payment\PaymentService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -14,8 +15,32 @@ class OrderService
 {
     public function __construct(
         protected OrderRepositoryInterface $orderRepository,
-        protected ShippingService $shippingService
-    ) {}
+        protected ShippingService $shippingService,
+        protected PaymentService $paymentService
+    ) {
+    }
+
+    /**
+     * Process checkout and immediately generate Snap token.
+     */
+    public function checkoutWithPayment(array $items, int $shippingZoneId, int $userId): array
+    {
+        return DB::transaction(function () use ($items, $shippingZoneId, $userId) {
+            // 1. Create Order
+            $order = $this->checkout($items, $shippingZoneId, $userId);
+
+            // 2. Generate Snap token
+            // We need to load user relationship for the payment service
+            $order->load(['user', 'items.product']);
+
+            $snapToken = $this->paymentService->generateSnapToken($order);
+
+            return [
+                'order' => $order,
+                'snap_token' => $snapToken
+            ];
+        });
+    }
 
     /**
      * Process checkout: validate stock, calculate costs, create order atomically.
@@ -33,16 +58,16 @@ class OrderService
 
             // 1. Fetch and validate products
             $productIds = array_column($items, 'product_id');
-            $products   = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
+            $products = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
 
-            $totalPrice    = 0;
+            $totalPrice = 0;
             $totalWeightGram = 0;
-            $orderItems    = [];
+            $orderItems = [];
 
             foreach ($items as $item) {
                 $product = $products->get($item['product_id']);
 
-                if (! $product) {
+                if (!$product) {
                     throw new InvalidArgumentException(
                         "Product with ID {$item['product_id']} not found."
                     );
@@ -60,8 +85,8 @@ class OrderService
 
                 $orderItems[] = [
                     'product_id' => $product->id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $product->price,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
                 ];
             }
 
@@ -73,12 +98,12 @@ class OrderService
 
             // 4. Create order
             $order = $this->orderRepository->create([
-                'user_id'        => $userId,
+                'user_id' => $userId,
                 'invoice_number' => $invoiceNumber,
-                'total_price'    => $totalPrice + $shipping['cost'],
-                'shipping_cost'  => $shipping['cost'],
-                'shipping_zone'  => $shipping['zone_name'],
-                'status'         => 'pending',
+                'total_price' => $totalPrice + $shipping['cost'],
+                'shipping_cost' => $shipping['cost'],
+                'shipping_zone' => $shipping['zone_name'],
+                'status' => 'pending',
                 'payment_status' => 'unpaid',
             ]);
 
@@ -100,14 +125,14 @@ class OrderService
      */
     public function generateInvoiceNumber(): string
     {
-        $date   = now()->format('Ymd');
+        $date = now()->format('Ymd');
         $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
         $invoice = "INV-{$date}-{$random}";
 
         // Ensure uniqueness
         while (Order::where('invoice_number', $invoice)->exists()) {
-            $random  = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
             $invoice = "INV-{$date}-{$random}";
         }
 
@@ -145,7 +170,7 @@ class OrderService
     {
         $order = $this->orderRepository->findById($orderId);
 
-        if (! $order) {
+        if (!$order) {
             throw new InvalidArgumentException('Order not found.');
         }
 

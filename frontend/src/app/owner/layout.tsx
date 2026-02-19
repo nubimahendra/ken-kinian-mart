@@ -11,6 +11,8 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
     const [authorized, setAuthorized] = useState(false);
     const [checking, setChecking] = useState(true);
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
     useEffect(() => {
         if (!isAuthenticated()) {
             router.replace('/login?redirect=/owner');
@@ -39,9 +41,9 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <OwnerSidebar />
-            <div className="ml-64">
-                <OwnerTopbar />
+            <OwnerSidebar isOpen={isSidebarOpen} />
+            <div className={`transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+                <OwnerTopbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
                 <main className="p-6">{children}</main>
             </div>
         </div>

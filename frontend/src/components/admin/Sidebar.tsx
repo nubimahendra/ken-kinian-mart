@@ -53,7 +53,7 @@ const menuItems = [
     },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen = true }: { isOpen?: boolean }) {
     const pathname = usePathname();
     const router = useRouter();
     const user = getStoredUser();
@@ -69,7 +69,7 @@ export default function AdminSidebar() {
     };
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-100 flex flex-col">
+        <aside className={`fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             {/* Logo */}
             <div className="h-16 flex items-center gap-2.5 px-6 border-b border-gray-100">
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-sm">

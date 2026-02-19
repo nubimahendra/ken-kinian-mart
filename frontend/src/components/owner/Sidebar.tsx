@@ -58,7 +58,7 @@ const menuItems = [
     },
 ];
 
-export default function OwnerSidebar() {
+export default function OwnerSidebar({ isOpen = true }: { isOpen?: boolean }) {
     const pathname = usePathname();
     const user = getStoredUser();
     const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
@@ -99,7 +99,7 @@ export default function OwnerSidebar() {
     };
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 flex flex-col">
+        <aside className={`fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             {/* Logo */}
             <div className="h-16 flex items-center gap-2.5 px-6 border-b border-gray-800">
                 <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">

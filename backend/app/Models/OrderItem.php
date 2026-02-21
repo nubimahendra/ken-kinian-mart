@@ -14,14 +14,16 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'quantity',
-        'price',
+        'price_snapshot',
+        'subtotal',
     ];
 
     protected function casts(): array
     {
         return [
             'quantity' => 'integer',
-            'price'   => 'decimal:2',
+            'price_snapshot' => 'decimal:2',
+            'subtotal' => 'decimal:2',
         ];
     }
 

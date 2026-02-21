@@ -52,6 +52,7 @@ export default function ProductDetailPage() {
             quantity,
             weight: product.weight,
             image: product.image,
+            image_url: product.image_url,
             slug: product.slug,
             stock: product.stock,
         };
@@ -109,9 +110,9 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     {/* Image */}
                     <div className="aspect-square bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl overflow-hidden relative">
-                        {product.image ? (
+                        {product.image_url || product.image ? (
                             <img
-                                src={product.image}
+                                src={product.image_url || product.image || ""}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />

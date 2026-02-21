@@ -39,12 +39,19 @@ export default function AdminProductsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [deleting, setDeleting] = useState<number | null>(null);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [sort, setSort] = useState('newest');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchProducts = async (p: number) => {
+    const fetchProducts = async (p: number, currentSearch: string, currentSort: string) => {
         setLoading(true);
         try {
-            const res = await adminFetch<ApiResponse<PaginatedData<Product>>>(`/admin/products?per_page=10&page=${p}`);
+            let url = `/admin/products?per_page=10&page=${p}&sort=${currentSort}`;
+            if (currentSearch) {
+                url += `&search=${encodeURIComponent(currentSearch)}`;
+            }
+            const res = await adminFetch<ApiResponse<PaginatedData<Product>>>(url);
             setProducts(res.data.data);
             setLastPage(res.data.last_page);
         } catch {
@@ -61,10 +68,19 @@ export default function AdminProductsPage() {
         } catch { /* ignore */ }
     };
 
+    // Debounce search
     useEffect(() => {
-        fetchProducts(page);
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset page on search
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => {
+        fetchProducts(page, debouncedSearch, sort);
         fetchCategories();
-    }, [page]);
+    }, [page, debouncedSearch, sort]);
 
     const generateSlug = (name: string) =>
         name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -155,14 +171,20 @@ export default function AdminProductsPage() {
             });
 
             setModalOpen(false);
-            fetchProducts(page);
+            fetchProducts(page, debouncedSearch, sort);
         } catch (err: unknown) {
-            const e = err as { message?: string, data?: any };
+            const e = err as { message?: string, data?: { data?: Record<string, string[]>, message?: string } };
             let msg = e.message || 'Failed to save product.';
-            if (e.data && typeof e.data === 'object') {
-                // Formatting validation errors
-                const errors = Object.values(e.data).flat().join(', ');
-                if (errors) msg = errors;
+            // Backend returns { success, message, data: { field: [errors] } }
+            // adminFetch throws { status, message: data.message, data: data }
+            // So field errors are in e.data.data
+            const fieldErrors = e.data?.data;
+            if (fieldErrors && typeof fieldErrors === 'object') {
+                const flattenedErrors = Object.values(fieldErrors)
+                    .map(v => Array.isArray(v) ? v.join(' ') : String(v));
+                if (flattenedErrors.length > 0) {
+                    msg = flattenedErrors.join('\n');
+                }
             }
             setError(msg);
         } finally {
@@ -175,7 +197,7 @@ export default function AdminProductsPage() {
         setDeleting(id);
         try {
             await adminFetch(`/admin/products/${id}`, { method: 'DELETE' });
-            fetchProducts(page);
+            fetchProducts(page, debouncedSearch, sort);
         } catch (err: unknown) {
             const e = err as { message?: string };
             alert(e.message || 'Failed to delete.');
@@ -192,6 +214,7 @@ export default function AdminProductsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
+                    <h1 className="text-xl font-bold text-gray-900">Products</h1>
                     <p className="text-sm text-gray-500">Manage your product inventory</p>
                 </div>
                 <Button onClick={openCreate}>
@@ -200,6 +223,38 @@ export default function AdminProductsPage() {
                     </svg>
                     Add Product
                 </Button>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="relative w-full sm:w-80">
+                    <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                </div>
+                <div className="w-full sm:w-auto flex items-center gap-2">
+                    <label className="text-sm text-gray-500 font-medium">Sort by:</label>
+                    <select
+                        value={sort}
+                        onChange={(e) => setSort(e.target.value)}
+                        className="py-2 pl-3 pr-8 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-gray-50 text-gray-700"
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                        <option value="price_asc">Price (Low to High)</option>
+                        <option value="price_desc">Price (High to Low)</option>
+                        <option value="stock_asc">Stock (Low to High)</option>
+                        <option value="stock_desc">Stock (High to Low)</option>
+                    </select>
+                </div>
             </div>
 
             {/* Table */}
@@ -261,7 +316,11 @@ export default function AdminProductsPage() {
                                         </td>
                                         <td className="px-6 py-3 text-right font-medium text-gray-900">{formatPrice(product.price)}</td>
                                         <td className="px-6 py-3 text-right">
-                                            <span className={`font-medium ${product.stock <= 5 ? 'text-red-600' : 'text-gray-900'}`}>
+                                            <span className={`inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded-full ${product.stock <= 5 ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                    product.stock <= 10 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                                        'bg-green-50 text-green-700 border border-green-200'
+                                                }`}>
+                                                {product.stock <= 5 && <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse" />}
                                                 {product.stock}
                                             </span>
                                         </td>

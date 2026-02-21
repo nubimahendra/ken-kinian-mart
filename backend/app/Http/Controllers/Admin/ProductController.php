@@ -21,8 +21,10 @@ class ProductController extends Controller
     {
         $perPage    = $request->integer('per_page', 15);
         $categoryId = $request->integer('category_id') ?: null;
+        $search     = $request->string('search')->toString() ?: null;
+        $sortBy     = $request->string('sort', 'newest')->toString();
 
-        $products = $this->productService->getProducts($perPage, $categoryId);
+        $products = $this->productService->getProducts($perPage, $categoryId, $search, $sortBy);
 
         return response()->json([
             'success' => true,

@@ -80,6 +80,7 @@ export interface Product {
   width: number | null;
   height: number | null;
   image: string | null;
+  image_url?: string;
   created_at: string;
   updated_at: string;
   category?: Category;
@@ -95,6 +96,7 @@ export interface CartItem {
   quantity: number;
   weight: number;
   image: string | null;
+  image_url?: string;
   slug: string;
   stock: number;
 }

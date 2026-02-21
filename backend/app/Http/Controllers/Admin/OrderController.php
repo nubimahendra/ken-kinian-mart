@@ -21,7 +21,9 @@ class OrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->integer('per_page', 15);
-        $orders  = $this->orderService->getAllOrders($perPage);
+        $filters = $request->only(['status']);
+
+        $orders  = $this->orderService->getAllOrders($perPage, $filters);
 
         return response()->json([
             'success' => true,

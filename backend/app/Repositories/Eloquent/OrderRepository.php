@@ -34,11 +34,15 @@ class OrderRepository implements OrderRepositoryInterface
             ->paginate($perPage);
     }
 
-    public function getAllOrders(int $perPage = 15): LengthAwarePaginator
+    public function getAllOrders(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        return Order::with(['items.product', 'user'])
-            ->latest()
-            ->paginate($perPage);
+        $query = Order::with(['items.product', 'user'])->latest();
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query->paginate($perPage);
     }
 
     public function updateStatus(Order $order, string $status): Order

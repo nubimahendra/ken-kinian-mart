@@ -86,7 +86,8 @@ class OrderService
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'quantity' => $item['quantity'],
-                    'price' => $product->price,
+                    'price_snapshot' => $product->price,
+                    'subtotal' => $subtotal,
                 ];
             }
 
@@ -158,22 +159,41 @@ class OrderService
     /**
      * Get all orders (admin).
      */
-    public function getAllOrders(int $perPage = 15): LengthAwarePaginator
+    public function getAllOrders(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        return $this->orderRepository->getAllOrders($perPage);
+        return $this->orderRepository->getAllOrders($perPage, $filters);
     }
 
     /**
-     * Update order status (admin).
+     * Update order status (admin) and handle stock restoration.
      */
     public function updateOrderStatus(int $orderId, string $status): Order
     {
-        $order = $this->orderRepository->findById($orderId);
+        return DB::transaction(function () use ($orderId, $status) {
+            $order = $this->orderRepository->findById($orderId);
 
-        if (!$order) {
-            throw new InvalidArgumentException('Order not found.');
-        }
+            if (!$order) {
+                throw new InvalidArgumentException('Order not found.');
+            }
 
-        return $this->orderRepository->updateStatus($order, $status);
+            $currentStatus = $order->status;
+
+            // Update the status using repository
+            $order = $this->orderRepository->updateStatus($order, $status);
+
+            // Restore logic: if order is moved from pending to cancelled or expired
+            if ($currentStatus === 'pending' && in_array($status, ['cancelled', 'expired'])) {
+                // Restore stock for all order items safely
+                $order->load('items');
+                foreach ($order->items as $item) {
+                    $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+                    if ($product) {
+                        $product->increment('stock', $item->quantity);
+                    }
+                }
+            }
+
+            return $order;
+        });
     }
 }

@@ -33,6 +33,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             quantity: 1,
             weight: product.weight,
             image: product.image,
+            image_url: product.image_url,
             slug: product.slug,
             stock: product.stock,
         };
@@ -82,13 +83,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02] h-full flex flex-col relative">
                     {/* Image Section */}
                     <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                        {product.image ? (
+                        {product.image_url || product.image ? (
                             <Image
-                                src={product.image}
+                                src={product.image_url || product.image || ""}
                                 alt={product.name}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                unoptimized={true}
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gray-50">
@@ -199,8 +201,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0 || isAdding}
                                 className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 font-medium text-sm transition-all duration-300 relative overflow-hidden ${product.stock > 0
-                                        ? 'bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white shadow-sm hover:shadow-lg active:scale-95'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white shadow-sm hover:shadow-lg active:scale-95'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 {isAdding ? (

@@ -236,28 +236,44 @@ export default function HomePage() {
       </section>
 
       {/* ==================== CTA ==================== */}
-      <section className="py-16 md:py-20">
+      <section className="py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative bg-gradient-to-r from-primary-500 to-primary-700 rounded-3xl px-8 py-14 md:py-16 text-center overflow-hidden">
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
+          {/* Mengganti py-14/16 menjadi py-10/12 agar lebih compact dan fit dengan konten */}
+          <div className="relative bg-gradient-to-r from-primary-500 to-primary-700 rounded-2xl md:rounded-3xl px-6 py-10 md:py-12 text-center overflow-hidden shadow-xl">
+
+            {/* Background Decor - Disesuaikan posisinya agar tidak menumpuk teks */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             </div>
+
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-2xl md:text-4xl font-bold text-white mb-3 tracking-tight">
                 Start Shopping Today
               </h2>
-              <p className="text-primary-100 text-lg mb-8 max-w-md mx-auto">
+
+              {/* max-w-lg agar teks deskripsi tidak terlalu sempit dan lebih enak dibaca */}
+              <p className="text-primary-500/10 text-white/90 text-base md:text-lg mb-8 max-w-lg mx-auto leading-relaxed">
                 Join thousands of happy customers who trust us for fresh, organic products.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/products">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto bg-white text-primary-700 hover:bg-gray-50">
+
+              {/* Tombol dibuat fit-content di desktop (inline-flex) */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link href="/products" className="w-full sm:w-auto">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full px-8 py-6 bg-white text-primary-700 hover:bg-gray-50 shadow-lg transition-transform active:scale-95"
+                  >
                     Browse Products
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
+                <Link href="/register" className="w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full px-8 py-6 border-white text-white hover:bg-white/10 transition-all"
+                  >
                     Create Account
                   </Button>
                 </Link>

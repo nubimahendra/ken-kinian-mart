@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ProductRepositoryInterface
 {
-    public function paginate(int $perPage = 15, ?int $categoryId = null): LengthAwarePaginator;
+    public function paginate(int $perPage = 15, ?int $categoryId = null, ?string $search = null, string $sortBy = 'newest'): LengthAwarePaginator;
 
     public function findById(int $id): ?Product;
 

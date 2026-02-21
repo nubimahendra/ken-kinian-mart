@@ -81,10 +81,10 @@ export default function OwnerOverview() {
         <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <StatCard label="Total Orders" value={totalOrders} color="from-blue-500 to-blue-600" icon={<span className="text-lg">📦</span>} />
-                <StatCard label="Total Revenue" value={formatPrice(totalRevenue)} color="from-emerald-500 to-emerald-600" icon={<span className="text-lg">💰</span>} />
-                <StatCard label="Paid Orders" value={paidOrders} color="from-primary-500 to-primary-700" icon={<span className="text-lg">✅</span>} />
-                <StatCard label="Pending Orders" value={pendingOrders} color="from-amber-500 to-amber-600" icon={<span className="text-lg">⏳</span>} />
+                <StatCard label="Total Orders" value={totalOrders} color="from-blue-500 to-blue-600" icon={<span className="text-lg">📦</span>} href="/owner/reports" />
+                <StatCard label="Total Revenue" value={formatPrice(totalRevenue)} color="from-emerald-500 to-emerald-600" icon={<span className="text-lg">💰</span>} href="/owner/reports" />
+                <StatCard label="Paid Orders" value={paidOrders} color="from-primary-500 to-primary-700" icon={<span className="text-lg">✅</span>} href="/owner/reports" />
+                <StatCard label="Pending Orders" value={pendingOrders} color="from-amber-500 to-amber-600" icon={<span className="text-lg">⏳</span>} href="/owner/reports" />
                 <StatCard label="Total Products" value={totalProducts} color="from-purple-500 to-purple-600" icon={<span className="text-lg">🏷️</span>} />
             </div>
 

@@ -15,7 +15,8 @@ class UpdateProductRequest extends FormRequest
 
     public function rules(): array
     {
-        $productId = $this->route('id');
+        // apiResource uses {product} as parameter name, fallback to {id} for manual routes
+        $productId = $this->route('product') ?? $this->route('id');
 
         return [
             'category_id' => ['required', 'integer', 'exists:categories,id'],

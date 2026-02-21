@@ -15,7 +15,7 @@ interface OrderRepositoryInterface
 
     public function getOrdersForUser(int $userId, int $perPage = 15): LengthAwarePaginator;
 
-    public function getAllOrders(int $perPage = 15): LengthAwarePaginator;
+    public function getAllOrders(int $perPage = 15, array $filters = []): LengthAwarePaginator;
 
     public function updateStatus(Order $order, string $status): Order;
 }

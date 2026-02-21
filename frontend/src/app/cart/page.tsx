@@ -81,8 +81,8 @@ export default function CartPage() {
                                 {/* Image */}
                                 <Link href={`/products/${item.slug}`} className="shrink-0">
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl overflow-hidden">
-                                        {item.image ? (
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        {item.image_url || item.image ? (
+                                            <img src={item.image_url || item.image || ""} alt={item.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <svg className="w-8 h-8 text-primary-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>

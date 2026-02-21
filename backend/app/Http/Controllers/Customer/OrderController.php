@@ -19,12 +19,12 @@ class OrderController extends Controller
     }
 
     /**
-     * Process checkout — create an order from cart items.
+     * Process checkout — create an order from cart items without payment immediately.
      */
     public function checkout(CheckoutRequest $request): JsonResponse
     {
         try {
-            $result = $this->orderService->checkoutWithPayment(
+            $order = $this->orderService->checkout(
                 items: $request->validated()['items'],
                 shippingZoneId: $request->validated()['shipping_zone_id'],
                 userId: auth('api')->id()
@@ -34,8 +34,7 @@ class OrderController extends Controller
                 'success' => true,
                 'message' => 'Order created successfully.',
                 'data' => [
-                    'order' => $result['order'],
-                    'snap_token' => $result['snap_token'],
+                    'order' => $order,
                 ],
             ], 201);
 

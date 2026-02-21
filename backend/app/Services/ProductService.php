@@ -16,13 +16,9 @@ class ProductService
     ) {
     }
 
-    public function getProducts(int $perPage = 15, ?int $categoryId = null): LengthAwarePaginator
+    public function getProducts(int $perPage = 15, ?int $categoryId = null, ?string $search = null, string $sortBy = 'newest'): LengthAwarePaginator
     {
-        $cacheKey = "products:page:" . request()->get('page', 1) . ":per:{$perPage}:cat:" . ($categoryId ?? 'all');
-
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($perPage, $categoryId) {
-            return $this->productRepository->paginate($perPage, $categoryId);
-        });
+        return $this->productRepository->paginate($perPage, $categoryId, $search, $sortBy);
     }
 
     public function getProductById(int $id): ?Product
@@ -49,8 +45,6 @@ class ProductService
 
         $product = $this->productRepository->create($data);
 
-        $this->clearCache();
-
         return $product;
     }
 
@@ -72,8 +66,6 @@ class ProductService
 
         $updated = $this->productRepository->update($product, $data);
 
-        $this->clearCache();
-
         return $updated;
     }
 
@@ -86,24 +78,7 @@ class ProductService
 
         $result = $this->productRepository->delete($product);
 
-        $this->clearCache();
-
         return $result;
     }
 
-    /**
-     * Clear all product-related cache.
-     */
-    protected function clearCache(): void
-    {
-        // Clear using pattern — flush entire products cache prefix
-        Cache::forget('products');
-        // For file/database cache driver, clear via tags won't work
-        // so we flush with a broader approach
-        if (method_exists(Cache::getStore(), 'flush')) {
-            // Only flush if using array/redis driver in testing
-        }
-        // In production with Redis, use Cache::tags(['products'])->flush();
-        // For file-based cache, individual keys are cleared on TTL expiry
-    }
 }

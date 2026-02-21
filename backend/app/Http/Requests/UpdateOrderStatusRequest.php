@@ -22,7 +22,7 @@ class UpdateOrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'in:pending,paid,shipped,completed,cancelled'],
+            'status' => ['required', 'in:pending,paid,shipped,completed,cancelled,failed,expired'],
         ];
     }
 
@@ -33,7 +33,7 @@ class UpdateOrderStatusRequest extends FormRequest
     {
         return [
             'status.required' => 'Order status is required.',
-            'status.in'       => 'Invalid status. Allowed: pending, paid, shipped, completed, cancelled.',
+            'status.in'       => 'Invalid status. Allowed: pending, paid, shipped, completed, cancelled, failed, expired.',
         ];
     }
 

@@ -62,10 +62,10 @@ export default function AdminDashboard() {
     };
 
     const statCards = [
-        { label: 'Total Orders', value: stats.totalOrders, color: 'from-blue-500 to-blue-600', icon: '📦' },
-        { label: 'Pending Orders', value: stats.pendingOrders, color: 'from-amber-500 to-amber-600', icon: '⏳' },
-        { label: 'Paid Orders', value: stats.paidOrders, color: 'from-primary-500 to-primary-700', icon: '✅' },
-        { label: 'Total Products', value: stats.totalProducts, color: 'from-purple-500 to-purple-600', icon: '🏷️' },
+        { label: 'Total Orders', value: stats.totalOrders, color: 'from-blue-500 to-blue-600', icon: '📦', href: '/admin/orders' },
+        { label: 'Pending Orders', value: stats.pendingOrders, color: 'from-amber-500 to-amber-600', icon: '⏳', href: '/admin/orders?status=pending' },
+        { label: 'Paid Orders', value: stats.paidOrders, color: 'from-primary-500 to-primary-700', icon: '✅', href: '/admin/orders?status=paid' },
+        { label: 'Total Products', value: stats.totalProducts, color: 'from-purple-500 to-purple-600', icon: '🏷️', href: '/admin/products' },
     ];
 
     if (loading) {
@@ -86,19 +86,20 @@ export default function AdminDashboard() {
             {/* Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statCards.map((card) => (
-                    <div
-                        key={card.label}
-                        className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-2xl">{card.icon}</span>
-                            <div className={`w-10 h-10 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm`}>
-                                {card.value}
+                    <Link href={card.href} key={card.label}>
+                        <div
+                            className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:border-blue-200"
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-2xl">{card.icon}</span>
+                                <div className={`w-10 h-10 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm`}>
+                                    {card.value}
+                                </div>
                             </div>
+                            <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
                         </div>
-                        <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
-                    </div>
+                    </Link>
                 ))}
             </div>
 

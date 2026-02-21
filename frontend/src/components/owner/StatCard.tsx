@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import Link from 'next/link';
 
 interface StatCardProps {
     label: string;
@@ -6,11 +7,12 @@ interface StatCardProps {
     icon: ReactNode;
     color: string;
     sub?: string;
+    href?: string;
 }
 
-export default function StatCard({ label, value, icon, color, sub }: StatCardProps) {
-    return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+export default function StatCard({ label, value, icon, color, sub, href }: StatCardProps) {
+    const content = (
+        <div className={`bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow ${href ? 'cursor-pointer hover:border-emerald-200' : ''}`}>
             <div className="flex items-center justify-between mb-3">
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br ${color} text-white shadow-sm`}>
                     {icon}
@@ -21,4 +23,10 @@ export default function StatCard({ label, value, icon, color, sub }: StatCardPro
             {sub && <p className="text-[10px] text-gray-400 mt-1">{sub}</p>}
         </div>
     );
+
+    if (href) {
+        return <Link href={href} className="block">{content}</Link>;
+    }
+
+    return content;
 }

@@ -102,7 +102,7 @@ export default function OwnerSidebar({ isOpen = true }: { isOpen?: boolean }) {
         <aside className={`fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             {/* Logo */}
             <div className="h-16 flex items-center gap-2.5 px-6 border-b border-gray-800">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
                     <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>

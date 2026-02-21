@@ -80,7 +80,7 @@ export default function CartPage() {
                             >
                                 {/* Image */}
                                 <Link href={`/products/${item.slug}`} className="shrink-0">
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary-50 to-green-50 rounded-xl overflow-hidden">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl overflow-hidden">
                                         {item.image ? (
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                         ) : (

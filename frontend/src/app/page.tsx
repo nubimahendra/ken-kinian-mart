@@ -38,7 +38,7 @@ export default function HomePage() {
     <div>
       {/* ==================== HERO ==================== */}
       {/* ==================== HERO ==================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-green-50">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-100">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-200/30 rounded-full blur-3xl opacity-50" />
           <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-green-200/30 rounded-full blur-3xl opacity-50" />
@@ -96,7 +96,7 @@ export default function HomePage() {
               </span>
               <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
                 Fresh Organic <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-green-500">Products</span> for You
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-600">Products</span> for You
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-lg">
                 Premium quality organic fruits, vegetables, and essentials sourced directly from trusted local farmers.
@@ -126,7 +126,7 @@ export default function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/products?category=${cat.id}`}
-                  className="group relative p-6 bg-gradient-to-br from-primary-50 to-green-50 rounded-2xl border border-primary-100 hover:border-primary-300 hover:shadow-lg transition-all duration-300 text-center"
+                  className="group relative p-6 bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl border border-primary-100 hover:border-primary-300 hover:shadow-lg transition-all duration-300 text-center"
                 >
                   <div className="w-14 h-14 mx-auto mb-3 bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                     <span className="text-2xl">{cat.icon || '🌿'}</span>
@@ -238,7 +238,7 @@ export default function HomePage() {
       {/* ==================== CTA ==================== */}
       <section className="py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative bg-gradient-to-r from-primary-600 to-green-600 rounded-3xl px-8 py-14 md:py-16 text-center overflow-hidden">
+          <div className="relative bg-gradient-to-r from-primary-500 to-primary-700 rounded-3xl px-8 py-14 md:py-16 text-center overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-2xl" />
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />

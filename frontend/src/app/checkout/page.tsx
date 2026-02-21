@@ -147,7 +147,7 @@ export default function CheckoutPage() {
                     <div className="divide-y divide-gray-50">
                         {cart.map((item) => (
                             <div key={item.product_id} className="p-4 flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-primary-50 to-green-50 rounded-xl overflow-hidden shrink-0">
+                                <div className="w-14 h-14 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl overflow-hidden shrink-0">
                                     {item.image ? (
                                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                     ) : (

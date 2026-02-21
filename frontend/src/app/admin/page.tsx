@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     const statCards = [
         { label: 'Total Orders', value: stats.totalOrders, color: 'from-blue-500 to-blue-600', icon: '📦' },
         { label: 'Pending Orders', value: stats.pendingOrders, color: 'from-amber-500 to-amber-600', icon: '⏳' },
-        { label: 'Paid Orders', value: stats.paidOrders, color: 'from-green-500 to-green-600', icon: '✅' },
+        { label: 'Paid Orders', value: stats.paidOrders, color: 'from-primary-500 to-primary-700', icon: '✅' },
         { label: 'Total Products', value: stats.totalProducts, color: 'from-purple-500 to-purple-600', icon: '🏷️' },
     ];
 

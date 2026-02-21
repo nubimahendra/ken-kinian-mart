@@ -108,7 +108,7 @@ export default function ProductDetailPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     {/* Image */}
-                    <div className="aspect-square bg-gradient-to-br from-primary-50 to-green-50 rounded-2xl overflow-hidden relative">
+                    <div className="aspect-square bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl overflow-hidden relative">
                         {product.image ? (
                             <img
                                 src={product.image}

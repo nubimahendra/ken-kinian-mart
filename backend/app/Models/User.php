@@ -22,7 +22,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
-        'role',
+        'role_id',
     ];
 
     /**
@@ -70,7 +70,31 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [
-            'role' => $this->role,
+            'role' => $this->role ? $this->role->name : null,
         ];
+    }
+
+    /**
+     * Get the role associated with the user.
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     */
+    public function hasPermission($permissionName)
+    {
+        if ($this->role && $this->role->name === 'owner') {
+            return true;
+        }
+
+        if (!$this->role) {
+            return false;
+        }
+
+        return $this->role->permissions->contains('name', $permissionName);
     }
 }

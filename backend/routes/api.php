@@ -27,6 +27,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
+    // Password Reset Routes
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->middleware('throttle:6,1'); // 6 requests per minute
+
+    Route::post('/reset-password', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'resetPassword'])
+        ->middleware('throttle:6,1');
+
     // Authenticated auth routes
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -46,87 +53,67 @@ Route::prefix('public')->group(function () {
 });
 
 // =============================================
-// Owner Routes (auth + role:owner)
+// Unified Admin Routes (auth + permissions)
 // =============================================
-Route::prefix('owner')->middleware(['auth:api', 'role:owner'])->group(function () {
+Route::prefix('admin')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', function () {
         return response()->json([
             'success' => true,
-            'message' => 'Welcome, Owner!',
-            'data' => ['role' => 'owner', 'info' => 'This is the owner dashboard.'],
-        ]);
-    });
-
-    // Owner has full access to admin resources too
-    // Categories
-    Route::get('/categories', [AdminCategoryController::class, 'index']);
-    Route::post('/categories', [AdminCategoryController::class, 'store']);
-    Route::put('/categories/{id}', [AdminCategoryController::class, 'update']);
-    Route::delete('/categories/{id}', [AdminCategoryController::class, 'destroy']);
-
-    // Products
-    Route::get('/products', [AdminProductController::class, 'index']);
-    Route::post('/products', [AdminProductController::class, 'store']);
-    Route::get('/products/{id}', [AdminProductController::class, 'show']);
-    Route::put('/products/{id}', [AdminProductController::class, 'update']);
-    Route::delete('/products/{id}', [AdminProductController::class, 'destroy']);
-
-    // Orders (full access)
-    Route::get('/orders', [AdminOrderController::class, 'index']);
-    Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
-
-    // Owner-only: Reports, Admin management, Shipping
-    Route::get('/report', [OwnerController::class, 'report']);
-
-    Route::get('/admins', [OwnerController::class, 'listAdmins']);
-    Route::post('/admins', [OwnerController::class, 'createAdmin']);
-    Route::put('/admins/{id}', [OwnerController::class, 'updateAdmin']);
-
-    Route::get('/shipping-zones', [OwnerController::class, 'listShippingZones']);
-    Route::put('/shipping-zones/{id}', [OwnerController::class, 'updateShippingZone']);
-
-    // Heroes
-    Route::get('/heroes', [HeroController::class, 'indexAdmin']);
-    Route::post('/heroes', [HeroController::class, 'store']);
-    Route::put('/heroes/{hero}', [HeroController::class, 'update']);
-    Route::delete('/heroes/{hero}', [HeroController::class, 'destroy']);
-});
-
-// =============================================
-// Admin Routes (auth + role:admin,owner)
-// =============================================
-Route::prefix('admin')->middleware(['auth:api', 'role:admin,owner'])->group(function () {
-    Route::get('/dashboard', function () {
-        return response()->json([
-            'success' => true,
-            'message' => 'Welcome, Admin!',
-            'data' => ['role' => 'admin', 'info' => 'This is the admin dashboard.'],
+            'message' => 'Welcome to the Dashboard!',
+            'data' => ['info' => 'Unified Admin & Owner dashboard.'],
         ]);
     });
 
     // Categories
-    Route::apiResource('categories', AdminCategoryController::class);
+    Route::apiResource('categories', AdminCategoryController::class)
+        ->middleware('permission:manage_categories');
 
     // Products
-    Route::apiResource('products', AdminProductController::class);
+    Route::apiResource('products', AdminProductController::class)
+        ->middleware('permission:manage_products');
 
     // Orders
-    Route::get('/orders', [AdminOrderController::class, 'index']);
-    Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
+    Route::get('/orders', [AdminOrderController::class, 'index'])
+        ->middleware('permission:manage_orders');
+    Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
+        ->middleware('permission:manage_orders');
+
+    // Financial / Reports
+    Route::get('/report', [OwnerController::class, 'report'])
+        ->middleware('permission:view_financial');
+
+    // User Management
+    Route::get('/admins', [OwnerController::class, 'listAdmins'])
+        ->middleware('permission:manage_users');
+    Route::post('/admins', [OwnerController::class, 'createAdmin'])
+        ->middleware('permission:manage_users');
+    Route::put('/admins/{id}', [OwnerController::class, 'updateAdmin'])
+        ->middleware('permission:manage_users');
 
     // Shipping Zones
-    Route::apiResource('shipping-zones', AdminShippingZoneController::class);
+    Route::apiResource('shipping-zones', AdminShippingZoneController::class)
+        ->middleware('permission:manage_orders');
+
+    // Heroes
+    Route::get('/heroes', [HeroController::class, 'indexAdmin'])
+        ->middleware('permission:manage_products');
+    Route::post('/heroes', [HeroController::class, 'store'])
+        ->middleware('permission:manage_products');
+    Route::put('/heroes/{hero}', [HeroController::class, 'update'])
+        ->middleware('permission:manage_products');
+    Route::delete('/heroes/{hero}', [HeroController::class, 'destroy'])
+        ->middleware('permission:manage_products');
 });
 
 // =============================================
-// Customer Routes (auth + role:user)
+// Customer Routes (auth + role:customer)
 // =============================================
-Route::prefix('customer')->middleware(['auth:api', 'role:user'])->group(function () {
+Route::prefix('customer')->middleware(['auth:api', 'role:customer'])->group(function () {
     Route::get('/dashboard', function () {
         return response()->json([
             'success' => true,
             'message' => 'Welcome, Customer!',
-            'data' => ['role' => 'user', 'info' => 'This is the customer dashboard.'],
+            'data' => ['role' => 'customer', 'info' => 'This is the customer dashboard.'],
         ]);
     });
 

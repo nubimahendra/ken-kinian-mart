@@ -75,14 +75,21 @@ function LoginContent() {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <Input
-                            label="Password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="space-y-1">
+                            <Input
+                                label="Password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <div className="flex justify-end">
+                                <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700 font-medium">
+                                    Lupa Password?
+                                </Link>
+                            </div>
+                        </div>
 
                         {error && (
                             <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
